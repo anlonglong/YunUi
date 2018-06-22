@@ -1,0 +1,41 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+/**
+ * //如果config.gradle这个文件定义在project下,要在这里依赖(apply),然后在module下面就可以引用了,
+ * 而如果config.gradle是定义在module下面,则需要在具体module下面依赖(apply)
+ */
+apply from:'config.gradle'
+
+
+buildscript {
+    
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.jakewharton:butterknife-gradle-plugin:8.4.0'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+        maven {
+            url "https://jitpack.io"
+        }
+        maven { url 'https://maven.google.com' }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

@@ -1,0 +1,133 @@
+if (rootProject.ext.isIntegrationModel) {
+    apply plugin: 'com.android.library'
+} else {
+    apply plugin: 'com.android.application'
+}
+
+def dependenciesLibraries   =    rootProject.ext.dependencies//引用config.gradle文件中的dependencies数组下面的值
+def AnnoProcsversion        =    rootProject.ext.annotationProcessorVersion//引用config.gradle文件中的annotationProcessorVersion数组下面的值
+def androidCfg = rootProject.ext.android//引用config.gradle文件中的Android数组下面的值
+def keyStore                =    new Properties()
+def keyStoreFile            =    rootProject.file("key.properties")
+keyStore.load(new FileInputStream(keyStoreFile))
+
+android {
+
+    if(!rootProject.ext.isIntegrationModel) {
+        signingConfigs {
+            sigingConfig {
+                keyAlias keyStore.get("keyAlias")
+                keyPassword keyStore.get("keyPassword")
+                storeFile file(keyStore.get("storeFile"))
+                storePassword keyStore.get("storePassword")
+            }
+        }
+    }
+
+
+
+    compileSdkVersion androidCfg.compileSdkVersion
+    buildToolsVersion androidCfg.buildToolsVersion
+
+
+    defaultConfig {
+        if (!rootProject.ext.isIntegrationModel) {
+            applicationId "demo.lon.com.news"
+        }
+        minSdkVersion androidCfg.minSdkVersion
+        targetSdkVersion androidCfg.targetSdkVersion
+        versionCode androidCfg.versionCode
+        versionName androidCfg.versionName
+
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        if (rootProject.ext.isIntegrationModel) {
+            javaCompileOptions {
+                annotationProcessorOptions {
+                    arguments = [moduleName: project.getName()]
+                    print("name = " + project.getName() + "\n")
+                }
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable false
+            if (!rootProject.ext.isIntegrationModel){
+                signingConfig signingConfigs.sigingConfig
+            }
+        }
+
+        debug {
+            debuggable true
+            if (!rootProject.ext.isIntegrationModel){
+                signingConfig signingConfigs.sigingConfig
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        /**
+         * 下面的模式一定要配对,否则会出现在Appliation模式下,无法编辑NewsActivity情况.
+         */
+        main {
+            if (!rootProject.ext.isIntegrationModel) {
+                /**
+                 * 这些必须提前写好,然后在同步.
+                 */
+                manifest.srcFile 'src/main/module/AndroidManifest.xml'
+                java.srcDirs = ['src/main/java', 'src/main/module/java']
+                res.srcDirs = ['src/main/res', 'src/main/module/res']
+            } else {
+                manifest.srcFile 'src/main/AndroidManifest.xml'
+            }
+            assets.srcDirs = ['src/main/assets', 'src/main/assets/']
+
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/ASL2.0';
+        exclude 'META-INF/DEPENDENCIES.txt';
+        exclude 'META-INF/LICENSE.txt';
+        exclude 'META-INF/NOTICE.txt';
+        exclude 'META-INF/NOTICE';
+        exclude 'META-INF/LICENSE';
+        exclude 'META-INF/DEPENDENCIES';
+        exclude 'META-INF/notice.txt';
+        exclude 'META-INF/license.txt';
+        exclude 'META-INF/dependencies.txt';
+        exclude 'META-INF/LGPL2.1';
+        exclude 'META-INF/services/javax.annotation.processing.Processor';
+        exclude 'META-INF/rxjava.properties';
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(':commonlibrary')
+    if (rootProject.ext.isIntegrationModel) {
+        annotationProcessor 'com.alibaba:arouter-compiler:1.1.4'
+    }
+
+//    implementation 'com.android.support:appcompat-v7:26.1.0'
+//    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    //   implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    testImplementation 'junit:junit:4.12'
+    implementation dependenciesLibraries["butteryKnife"]
+    annotationProcessor "com.jakewharton:butterknife-compiler:${AnnoProcsversion["butteryKnife"]}"
+    annotationProcessor "com.google.dagger:dagger-compiler:${AnnoProcsversion["dagger_compiler"]}"
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+}

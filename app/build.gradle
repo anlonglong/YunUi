@@ -1,0 +1,135 @@
+apply plugin: 'com.android.application'
+//def 后面定义的变量名字不能是一些关键字,eg:debug,这个货会报错的
+def androidCfg              =    rootProject.ext.android//引用config.gradle文件中的Android数组下面的值
+def dependenciesLibraries   =    rootProject.ext.dependencies//引用config.gradle文件中的dependencies数组下面的值
+def AnnoProcsversion        =    rootProject.ext.annotationProcessorVersion//引用config.gradle文件中的annotationProcessorVersion数组下面的值
+def url                     =    rootProject.ext.url
+def debugable               =    rootProject.ext.debugable
+//下面三行是加载签名文件
+def keyStore                =    new Properties()
+def keyStoreFile            =    rootProject.file("key.properties")
+keyStore.load(new FileInputStream(keyStoreFile))
+
+android {
+    signingConfigs {
+        sigingConfig {
+            keyAlias keyStore.get("keyAlias")
+            keyPassword keyStore.get("keyPassword")
+            storeFile file(keyStore.get("storeFile"))
+            storePassword keyStore.get("storePassword")
+        }
+    }
+    compileSdkVersion androidCfg.compileSdkVersion
+    buildToolsVersion androidCfg.buildToolsVersion
+    defaultConfig {
+        applicationId androidCfg.applicationId
+        minSdkVersion androidCfg.minSdkVersion
+        targetSdkVersion androidCfg.targetSdkVersion
+        versionCode androidCfg.versionCode
+        versionName androidCfg.versionName
+        flavorDimensions "versionCode"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner" //这句可以删除掉
+        multiDexEnabled true
+
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi' //, 'x86', 'armeabi-v7a', 'x86_64', 'arm64-v8a'
+        }
+
+
+        if (!rootProject.ext.isIntegrationModel) {
+            javaCompileOptions {
+                annotationProcessorOptions {
+                    arguments = [moduleName: project.getName()]
+                }
+            }
+        }
+    }
+    packagingOptions {
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+        exclude 'META-INF/rxjava.properties'
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable false
+            signingConfig signingConfigs.sigingConfig
+            versionNameSuffix '_release'
+            //buildConfigField 后面的括号可加可不加
+            buildConfigField("String", "url", "\"${url["releaseUrl"]}\"")
+            buildConfigField("boolean", "debug", "${debugable["relese"]}")
+        }
+        debug {
+            debuggable true
+            versionNameSuffix '_debug'
+            signingConfig signingConfigs.sigingConfig
+            buildConfigField("String", "url", "\"${url["debugUrl"]}\"")
+            buildConfigField("boolean", "debug", "${debugable["debug"]}")
+            print("\"${url["debugUrl"]}\"")
+        }
+    }
+
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+
+    if (rootProject.ext.isIntegrationModel) {
+      //  implementation project(':chat')
+        //implementation project(':live')
+        implementation project(':music')
+        implementation project(':news')
+
+    }
+    implementation project(':commonlibrary')
+
+
+    //第三种依赖(最简洁版版:代码最少)
+    //dependenciesLibraries 实际就是一个map,可以用循环的方式依赖,但是只能依赖implementation(compiler)开头的这种库
+    //annotationProcessor开头注解库会出错(基于第二种实现的)
+    //dependenciesLibraries.each { k, v -> implementation v }
+    //第二种依赖(最改进版),但是只能依赖implementation(compiler)开头的这种库
+    //annotationProcessor开头注解库会出错
+    //    implementation dependenciesLibraries["supportAppcompat"]
+    //    implementation dependenciesLibraries["supportV4"]
+    //    implementation dependenciesLibraries["suppoutDesign"]
+    //    implementation dependenciesLibraries["constraint"]
+    //    implementation dependenciesLibraries["indictor"]
+    //第一种依赖(最原始)
+    //butterknife
+    //implementation 'com.jakewharton:butterknife:8.5.1'
+    //implementation 'com.jph.takephoto:takephoto_library:4.0.3'
+//    annotationProcessor "com.jakewharton:butterknife-compiler:${AnnoProcsversion["butteryKnife"]}"
+//    annotationProcessor "android.arch.lifecycle:compiler:${AnnoProcsversion["arch_version"]}"
+//    annotationProcessor "android.arch.persistence.room:compiler:${AnnoProcsversion["arch_version"]}"
+//    testImplementation 'junit:junit:4.12'
+    //这句可以删除掉
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    //这句可以删除掉
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    //这句可以删除掉
+}

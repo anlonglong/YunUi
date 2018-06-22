@@ -1,0 +1,124 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.jakewharton.butterknife'
+def androidCfg              =    rootProject.ext.android//引用config.gradle文件中的Android数组下面的值
+def dependenciesLibraries   =    rootProject.ext.dependencies//引用config.gradle文件中的dependencies数组下面的值
+def AnnoProcsversion        =    rootProject.ext.annotationProcessorVersion//引用config.gradle文件中的annotationProcessorVersion数组下面的值
+android {
+
+    compileSdkVersion androidCfg.compileSdkVersion
+    buildToolsVersion androidCfg.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion androidCfg.minSdkVersion
+        targetSdkVersion androidCfg.targetSdkVersion
+        versionCode androidCfg.versionCode
+        versionName androidCfg.versionName
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        exclude 'META-INF/ASL2.0';
+        exclude 'META-INF/DEPENDENCIES.txt';
+        exclude 'META-INF/LICENSE.txt';
+        exclude 'META-INF/NOTICE.txt';
+        exclude 'META-INF/NOTICE';
+        exclude 'META-INF/LICENSE';
+        exclude 'META-INF/DEPENDENCIES';
+        exclude 'META-INF/notice.txt';
+        exclude 'META-INF/license.txt';
+        exclude 'META-INF/dependencies.txt';
+        exclude 'META-INF/LGPL2.1';
+        exclude 'META-INF/services/javax.annotation.processing.Processor';
+        exclude 'META-INF/rxjava.properties';
+    }
+
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    //dependenciesLibraries.each {k, v ->  api  v}
+
+    api(dependenciesLibraries.supportAppcompat){
+        exclude module: 'support-annotations'
+    }
+
+    api(dependenciesLibraries.supportV4){
+        exclude module: 'support-annotations'
+    }
+
+    api dependenciesLibraries.constraint
+
+    api dependenciesLibraries.suppoutDesign
+
+    api dependenciesLibraries.indictor
+
+    api dependenciesLibraries.recycleView
+
+    api dependenciesLibraries.lifecycleRuntim
+
+    api dependenciesLibraries.lifecycleExt
+
+    api dependenciesLibraries.lifecycleRoom
+
+    api dependenciesLibraries.butteryKnife
+
+    api dependenciesLibraries.tokenPhtot
+
+    api dependenciesLibraries.aroute
+
+    api dependenciesLibraries.androidGifDrawable
+
+    api(dependenciesLibraries.rxpermission){
+        exclude module: 'rxjava'
+    }
+
+
+    api dependenciesLibraries.rxjava2
+
+
+    api(dependenciesLibraries.rxjava2_android){
+        exclude module: 'rxjava'
+    }
+
+    api(dependenciesLibraries.rxlifecycle2) {
+        exclude module: 'rxjava'
+        exclude module: 'jsr305'
+    }
+
+    api(dependenciesLibraries.rxlifecycle2_components) {
+        exclude module: 'support-v4'
+        exclude module: 'appcompat-v7'
+        exclude module: 'support-annotations'
+        exclude module: 'rxjava'
+        exclude module: 'rxandroid'
+        exclude module: 'rxlifecycle'
+    }
+
+    api dependenciesLibraries.dagger2
+
+
+
+    annotationProcessor "com.jakewharton:butterknife-compiler:${AnnoProcsversion["butteryKnife"]}"
+    annotationProcessor "android.arch.lifecycle:compiler:${AnnoProcsversion["arch_version"]}"
+    annotationProcessor "android.arch.persistence.room:compiler:${AnnoProcsversion["arch_version"]}"
+    annotationProcessor "com.google.dagger:dagger-compiler:${AnnoProcsversion["dagger_compiler"]}"
+   // annotationProcessor "com.alibaba:arouter-compiler:${AnnoProcsversion["aroute"]}"
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+}
